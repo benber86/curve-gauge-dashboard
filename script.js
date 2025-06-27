@@ -90,7 +90,7 @@ class CurveGaugeDashboard {
             const depositorsData = await this.fetchDepositors(chain, metadata.lp_token_address);
 
             await this.updateLoadingText('Loading TVL history...');
-            const tvlData = await this.fetchTVLHistory(chain, metadata.lp_token_address);
+            const tvlData = await this.fetchTVLHistory(chain, address);
 
             let tokenHoldersData = [];
             if (this.getChainForMoralis(chain)) {
