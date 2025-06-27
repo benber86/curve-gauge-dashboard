@@ -6,6 +6,10 @@ class CurveGaugeDashboard {
         this.filteredDepositors = [];
         this.selectedChain = 'ethereum';
 
+        this.tvlChart = null;
+        this.depositorsChart = null;
+        this.tokenHolderCharts = [];
+
         this.initializeEventListeners();
         this.initializeCustomSelect();
     }
@@ -216,6 +220,12 @@ class CurveGaugeDashboard {
     }
 
     displayTokenHoldersCharts(tokenHoldersData) {
+        this.tokenHolderCharts.forEach(chart => {
+            if (chart) {
+                chart.destroy();
+            }
+        });
+        this.tokenHolderCharts = [];
         const section = document.getElementById('token-holders-section');
         const chartsContainer = document.getElementById('token-holders-charts');
 
@@ -459,6 +469,10 @@ class CurveGaugeDashboard {
     }
 
     displayTVLChart(tvlData) {
+        if (this.tvlChart) {
+            this.tvlChart.destroy();
+            this.tvlChart = null;
+        }
         const ctx = document.getElementById('tvl-chart').getContext('2d');
 
         const labels = tvlData.data.map(item =>
@@ -527,6 +541,10 @@ class CurveGaugeDashboard {
     }
 
     displayDepositorsChart(depositors) {
+        if (this.depositorsChart) {
+            this.depositorsChart.destroy();
+            this.depositorsChart = null;
+        }
         const ctx = document.getElementById('depositors-chart').getContext('2d');
 
         const top10 = depositors.slice(0, 10);
