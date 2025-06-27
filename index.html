@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curve Gauge Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Curve Gauge Dashboard</h1>
+    </header>
+
+    <div class="input-section">
+        <div class="form-group">
+            <label for="gauge-address">Gauge Address:</label>
+            <input type="text" id="gauge-address" placeholder="Enter Ethereum address">
+        </div>
+
+        <div class="form-group">
+            <label>Chain:</label>
+            <div class="custom-select">
+                <div class="select-selected">
+                    <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/ethereum.png" alt="ethereum">
+                    <span>Ethereum</span>
+                    <div class="select-arrow"></div>
+                </div>
+                <div class="select-items select-hide">
+                    <div data-value="ethereum">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/ethereum.png" alt="ethereum">
+                        <span>Ethereum</span>
+                    </div>
+                    <div data-value="xdai">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/xdai.png" alt="xdai">
+                        <span>xDAI</span>
+                    </div>
+                    <div data-value="hyperliquid">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/hyperliquid.png" alt="hyperliquid">
+                        <span>Hyperliquid</span>
+                    </div>
+                    <div data-value="base">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/base.png" alt="base">
+                        <span>Base</span>
+                    </div>
+                    <div data-value="fantom">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/fantom.png" alt="fantom">
+                        <span>Fantom</span>
+                    </div>
+                    <div data-value="fraxtal">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/fraxtal.png" alt="fraxtal">
+                        <span>Fraxtal</span>
+                    </div>
+                    <div data-value="sonic">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/sonic.png" alt="sonic">
+                        <span>Sonic</span>
+                    </div>
+                    <div data-value="optimism">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/optimism.png" alt="optimism">
+                        <span>Optimism</span>
+                    </div>
+                    <div data-value="polygon">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/polygon.png" alt="polygon">
+                        <span>Polygon</span>
+                    </div>
+                    <div data-value="arbitrum">
+                        <img src="https://cdn.jsdelivr.net/gh/curvefi/curve-assets/chains/arbitrum.png" alt="arbitrum">
+                        <span>Arbitrum</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button id="analyze-btn">Analyze Pool</button>
+    </div>
+
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p id="loading-text">Loading pool metadata...</p>
+    </div>
+
+    <div id="error" class="error-section hidden">
+        <h3>Error</h3>
+        <p id="error-message"></p>
+        <pre id="error-details"></pre>
+    </div>
+
+    <div id="results" class="results-section hidden">
+        <div class="pool-header">
+            <h2 id="pool-name"></h2>
+            <div class="pool-metadata">
+                <div class="metadata-item registry-row">
+                    <span class="label">Registry:</span>
+                    <span id="registry"></span>
+                </div>
+                <div class="metadata-other-info">
+                    <div class="metadata-item">
+                        <span class="label">Pool Age:</span>
+                        <span id="pool-age"></span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="label">Deployment Date:</span>
+                        <span id="deployment-date"></span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="label">Deployment Transaction:</span>
+                        <a id="deployment-tx" href="#" target="_blank"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3>TVL History (30 Days)</h3>
+            <div class="chart-container">
+                <canvas id="tvl-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="depositors-section">
+            <div class="section-header">
+                <h3>Liquidity Providers</h3>
+                <div class="stats">
+                    <span>Total Deposits: <strong id="total-deposits">0</strong></span>
+                    <span>Total Withdrawals: <strong id="total-withdrawals">0</strong></span>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h4>Top 10 Depositors</h4>
+                <div class="chart-container">
+                    <canvas id="depositors-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="table-section">
+                <h4>All Depositors</h4>
+                <div class="table-controls">
+                        <span>Show
+                            <select id="page-size">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select> entries
+                        </span>
+                    <input type="text" id="search-input" placeholder="Search addresses...">
+                </div>
+
+                <table id="depositors-table">
+                    <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Net Liquidity</th>
+                        <th>Total Deposits</th>
+                        <th>Total Withdrawals</th>
+                        <th>Add Events</th>
+                        <th>Remove Events</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <div class="pagination">
+                    <button id="prev-page" disabled>Previous</button>
+                    <span id="page-info">Page 1 of 1</span>
+                    <button id="next-page" disabled>Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

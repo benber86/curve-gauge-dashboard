@@ -1,0 +1,10 @@
+name = "curve-gauge-api"
+main = "worker.js"
+compatibility_date = "2025-07-01"
+
+[[kv_namespaces]]
+binding = "CURVE_GAUGES"
+id = "87247480a60f46d3b41cf1939a44a3c5"
+
+[env.production.vars]
+ENVIRONMENT = "production"
