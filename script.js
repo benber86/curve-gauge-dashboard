@@ -87,7 +87,7 @@ class CurveGaugeDashboard {
             const metadata = await this.fetchMetadata(chain, address);
 
             await this.updateLoadingText('Loading depositors data...');
-            const depositorsData = await this.fetchDepositors(chain, metadata.lp_token_address);
+            const depositorsData = await this.fetchDepositors(chain, address);
 
             await this.updateLoadingText('Loading TVL history...');
             const tvlData = await this.fetchTVLHistory(chain, address);
