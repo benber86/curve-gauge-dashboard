@@ -3,7 +3,6 @@ export default {
         try {
             const url = new URL(request.url);
 
-            // Health check endpoint
             if (url.pathname === '/health') {
                 return new Response(JSON.stringify({
                     status: 'ok',
@@ -64,7 +63,6 @@ async function handleTokenHolders(request, env, url) {
     }
 
     try {
-        // Check if we have the required environment variables
         if (!env.MORALIS_API_KEY) {
             return new Response(JSON.stringify({
                 error: 'MORALIS_API_KEY not configured'
@@ -86,7 +84,7 @@ async function handleTokenHolders(request, env, url) {
         const pathParts = url.pathname.split('/');
         const tokenAddress = pathParts[3];
         const chain = url.searchParams.get('chain') || 'eth';
-        const limit = url.searchParams.get('limit') || '100';
+        const limit = 10;
 
         if (!tokenAddress) {
             return new Response(JSON.stringify({ error: 'Token address required' }), {
@@ -108,13 +106,11 @@ async function handleTokenHolders(request, env, url) {
 
         const cacheKey = `token-holders:${chain}:${tokenAddress}:${limit}`;
 
-        // Try to get cached data
         let cachedData;
         try {
             cachedData = await env.CURVE_GAUGES.get(cacheKey);
         } catch (kvError) {
             console.error('KV get error:', kvError);
-            // Continue without cache if KV fails
         }
 
         if (cachedData) {
@@ -154,14 +150,12 @@ async function handleTokenHolders(request, env, url) {
         const data = await moralisResponse.json();
         const responseData = JSON.stringify(data);
 
-        // Try to cache the data
         try {
             await env.CURVE_GAUGES.put(cacheKey, responseData, {
                 expirationTtl: 24 * 60 * 60
             });
         } catch (kvError) {
             console.error('KV put error:', kvError);
-            // Continue even if caching fails
         }
 
         return new Response(responseData, {
