@@ -1,6 +1,6 @@
 name = "curve-gauge-api"
 main = "worker.js"
-compatibility_date = "2025-07-01"
+compatibility_date = "2025-06-01"
 
 [[kv_namespaces]]
 binding = "CURVE_GAUGES"
