@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Curve Gauge Dashboard</title>
+    <title>Curve Gauge DD Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>Curve Gauge Dashboard</h1>
+        <h1>Curve Gauge DD Dashboard</h1>
     </header>
 
     <div class="input-section">
         <div class="form-group">
-            <label for="gauge-address">Gauge Address:</label>
+            <label for="gauge-address">Pool Address:</label>
             <input type="text" id="gauge-address" placeholder="Enter Ethereum address">
         </div>
 
@@ -91,8 +91,12 @@
             <h2 id="pool-name"></h2>
             <div class="pool-metadata">
                 <div class="metadata-item registry-row">
-                    <span class="label">Registry:</span>
+                    <span class="label">Factory:</span>
                     <span id="registry"></span>
+                </div>
+                <div class="metadata-item gauges-row">
+                    <span class="label">Existing Gauges:</span>
+                    <span id="gauges"></span>
                 </div>
                 <div class="metadata-other-info">
                     <div class="metadata-item">
@@ -168,6 +172,11 @@
                     <button id="next-page" disabled>Next</button>
                 </div>
             </div>
+        </div>
+
+        <div id="token-holders-section" class="token-holders-section hidden">
+            <h3>Token Holders Distribution</h3>
+            <div id="token-holders-charts" class="token-holders-charts"></div>
         </div>
     </div>
 </div>
