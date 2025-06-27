@@ -1,12 +1,54 @@
 export default {
     async fetch(request, env, ctx) {
-        const url = new URL(request.url);
+        try {
+            const url = new URL(request.url);
 
-        if (url.pathname.startsWith('/api/token-holders/')) {
-            return handleTokenHolders(request, env, url);
+            // Health check endpoint
+            if (url.pathname === '/health') {
+                return new Response(JSON.stringify({
+                    status: 'ok',
+                    timestamp: new Date().toISOString(),
+                    env: {
+                        hasKV: !!env.CURVE_GAUGES,
+                        hasAPIKey: !!env.MORALIS_API_KEY
+                    }
+                }), {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                });
+            }
+
+            if (url.pathname.startsWith('/api/token-holders/')) {
+                return handleTokenHolders(request, env, url);
+            }
+
+            return new Response(JSON.stringify({
+                error: 'Not Found',
+                path: url.pathname
+            }), {
+                status: 404,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            });
+
+        } catch (error) {
+            console.error('Top-level worker error:', error);
+            return new Response(JSON.stringify({
+                error: 'Worker initialization error',
+                message: error.message,
+                stack: error.stack
+            }), {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            });
         }
-
-        return new Response('Not Found', { status: 404 });
     },
 };
 
@@ -22,6 +64,25 @@ async function handleTokenHolders(request, env, url) {
     }
 
     try {
+        // Check if we have the required environment variables
+        if (!env.MORALIS_API_KEY) {
+            return new Response(JSON.stringify({
+                error: 'MORALIS_API_KEY not configured'
+            }), {
+                status: 500,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (!env.CURVE_GAUGES) {
+            return new Response(JSON.stringify({
+                error: 'KV namespace not configured'
+            }), {
+                status: 500,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+
         const pathParts = url.pathname.split('/');
         const tokenAddress = pathParts[3];
         const chain = url.searchParams.get('chain') || 'eth';
@@ -47,7 +108,15 @@ async function handleTokenHolders(request, env, url) {
 
         const cacheKey = `token-holders:${chain}:${tokenAddress}:${limit}`;
 
-        let cachedData = await env.CURVE_GAUGES.get(cacheKey);
+        // Try to get cached data
+        let cachedData;
+        try {
+            cachedData = await env.CURVE_GAUGES.get(cacheKey);
+        } catch (kvError) {
+            console.error('KV get error:', kvError);
+            // Continue without cache if KV fails
+        }
+
         if (cachedData) {
             console.log('Returning cached data for:', cacheKey);
             return new Response(cachedData, {
@@ -85,9 +154,15 @@ async function handleTokenHolders(request, env, url) {
         const data = await moralisResponse.json();
         const responseData = JSON.stringify(data);
 
-        await env.CURVE_GAUGES.put(cacheKey, responseData, {
-            expirationTtl: 24 * 60 * 60
-        });
+        // Try to cache the data
+        try {
+            await env.CURVE_GAUGES.put(cacheKey, responseData, {
+                expirationTtl: 24 * 60 * 60
+            });
+        } catch (kvError) {
+            console.error('KV put error:', kvError);
+            // Continue even if caching fails
+        }
 
         return new Response(responseData, {
             headers: {
@@ -98,10 +173,11 @@ async function handleTokenHolders(request, env, url) {
         });
 
     } catch (error) {
-        console.error('Worker error:', error);
+        console.error('Token holders error:', error);
         return new Response(JSON.stringify({
             error: 'Internal server error',
-            details: error.message
+            message: error.message,
+            stack: error.stack
         }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
