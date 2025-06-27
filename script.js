@@ -291,7 +291,8 @@ class CurveGaugeDashboard {
             holder.is_contract ? '#c82333' : '#5a6fd8'
         );
 
-        new Chart(ctx, {
+        // Return the chart instance so it can be stored
+        return new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
@@ -347,6 +348,7 @@ class CurveGaugeDashboard {
             }
         });
     }
+    
     displayPoolHeader(metadata, chain) {
         document.getElementById('pool-name').textContent = metadata.name;
 
@@ -481,7 +483,8 @@ class CurveGaugeDashboard {
 
         const tvlValues = tvlData.data.map(item => item.tvl_usd);
 
-        new Chart(ctx, {
+        // Store the chart instance
+        this.tvlChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -553,7 +556,8 @@ class CurveGaugeDashboard {
         const labels = top10.map((d, i) => `#${i + 1} ${d.user_address.substring(0, 8)}...`);
         const percentages = top10.map(d => (d.net_liquidity_provided / totalLiquidity * 100));
 
-        new Chart(ctx, {
+        // Store the chart instance
+        this.depositorsChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
